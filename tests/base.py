@@ -8,16 +8,20 @@ class MailTestBase:
     description = "Base class for mail tests"
     smtp_server = "main"        # one of "main" or "secondary" (for simulations of bounces etc.)
 
-    def __init__(self, sender, to, config=None):
+    def __init__(self, sender, recipient, config=None):
         self.sender = sender
-        self.to = to
+        self.recipient = recipient
         self.config = config
 
     def finalizeMessage(self, msg):
         """Add sender and recipient address as From: and To: header to message"""
         if "From" not in msg:
             msg["From"] = self.sender
-        msg["To"] = self.to
+
+        if type(self.recipient) == list:
+            msg["To"] = ", ".join(self.recipient)
+        else:
+            msg["To"] = self.recipient
         return msg
     
     def generateTestCases(self):

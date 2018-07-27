@@ -29,6 +29,14 @@ class EmptyMailTest(MailTestBase):
         msg["Subject"] = ""
         yield msg
 
+class TotallyEmptyMailTest(EmptyMailTest):
+    identifier = "totally_empty"
+    name = "Totally Empty Mail"
+    description = "Empty mails without sender and recipient information"
+
+    def finalizeMessage(self, msg):
+        return msg
+
 class AlmostEmptyMailTest(MailTestBase):
     active = True
     identifier = "almost_empty"

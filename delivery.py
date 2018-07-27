@@ -39,7 +39,7 @@ class SMTPDelivery(DeliveryBase):
     def deliver_testcase(self, testcase, recipient):
         print("Sending test case {} from test '{}' to {}".format(self.testcase_index, self.testcases.name, recipient))
         try:
-            result = self.smtp.send_message(testcase)
+            result = self.smtp.send_message(testcase, from_addr=self.sender, to_addrs=recipient)
             for failed_recipient, (code, message) in result.items():
                 print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, message))
         except smtplib.SMTPRecipientsRefused as e:
@@ -54,6 +54,9 @@ class SMTPDelivery(DeliveryBase):
             print("! Unexpected SMTP error: " + str(e))
         except smtplib.SMTPNotSupportedError as e:
             print("! SMTP server doesn't supports SMTPUTF8: " + str(e))
+
+    def close(self):
+        self.smtp.quit()
 
 class FileDelivery(DeliveryBase):
     """Dumps each test case into separate plain file"""

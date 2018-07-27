@@ -34,7 +34,7 @@ if args.list:   # print test list
 # Construct final recipient list (one mail per recipient or one for all recipients?)
 recipients = args.to
 if args.send_one:
-    recipients = [", ".join(recipients)]
+    recipients = [ recipients ]
 
 # Choose delivery class
 if args.output:
