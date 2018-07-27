@@ -33,6 +33,8 @@ class TotallyEmptyMailTest(EmptyMailTest):
     identifier = "totally_empty"
     name = "Totally Empty Mail"
     description = "Empty mails without sender and recipient information"
+    delivery_sender = True
+    delivery_recipient = True
 
     def finalizeMessage(self, msg):
         return msg

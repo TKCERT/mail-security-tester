@@ -39,7 +39,23 @@ class SMTPDelivery(DeliveryBase):
     def deliver_testcase(self, testcase, recipient):
         print("Sending test case {} from test '{}' to {}".format(self.testcase_index, self.testcases.name, recipient))
         try:
-            result = self.smtp.send_message(testcase, from_addr=self.sender, to_addrs=recipient)
+            try:
+                if testcase.delivery_sender:
+                    sender = self.sender
+                else:
+                    sender = None
+            except AttributeError:
+                sender = None
+
+            try:
+                if testcase.delivery_recipient:
+                    recipient = recipient
+                else:
+                    recipient = None
+            except AttributeError:
+                recipient = None
+
+            result = self.smtp.send_message(testcase, sender, recipient)
             for failed_recipient, (code, message) in result.items():
                 print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, message))
         except smtplib.SMTPRecipientsRefused as e:
