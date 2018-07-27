@@ -73,3 +73,10 @@ class SenderHomographAttackTest(HomographAttackTestBase):
             msg["Subject"] = self.subject.format(desc)
             msg["From"] = self.hsender.format(domain)
             yield msg
+
+class SenderHomographAttackwithSMTPDialogTest(SenderHomographAttackTest):
+    active = True
+    identifier = "homograph-sender-smtp"
+    name = "Sender address homograph attacks (explicit SMTP sender)"
+    description = "Obfuscation of faked domains by IDN homographs in sender address with explicit sender in SMTP dialog"
+    delivery_sender = True
