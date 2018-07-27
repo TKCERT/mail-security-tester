@@ -1,5 +1,8 @@
 # Base classes for test description
 
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 class MailTestBase:
     """Mail test base class"""
     active = False
@@ -41,3 +44,25 @@ class MailTestBase:
     def __iter__(self):
         """Generates test cases. By default, test cases from generateTestCases() are completed with finalizeMessage()."""
         yield from [self.finalizeMessage(self.passAttributes(msg)) for msg in self.generateTestCases()]
+
+class MailAttachmentTestBase(MailTestBase):
+    """Base class for tests of attachments"""
+    identifier = "base-attachment"
+    name = "Mail Attachment Test Base"
+    description = "Base class for mail attachment tests"
+    subject = "Attachment Test - {}"        # place holder is replaced with test attachment description
+    text_message = "This is a test mail"    # Message for text part
+
+    def generateAttachments(self):
+        """Generates attachment parts that are wrapped into a full mail message by generateTestCases() method"""
+        raise NotImplementedError("Attachment generator is not implemented!")
+
+    def generateTestCases(self):
+        """Generates a mail per attachment from generator method generateAttachments()"""
+        for desc, attachment in self.generateAttachments():
+            msg = MIMEMultipart()
+            msg["Subject"] = self.subject.format(desc)
+            textpart = MIMEText(self.text_message)
+            msg.attach(textpart)
+            msg.attach(attachment)
+            yield msg
