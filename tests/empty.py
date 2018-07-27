@@ -2,36 +2,7 @@
 
 from .base import MailTestBase
 from email.mime.text import MIMEText
-
-class EmptyMailNoMimeNoSubjectTest(MailTestBase):
-    active = True
-    identifier = "empty_no_mime"
-    name = "Empty mail without mime header"
-    description = "Minimail mail without any content and mime header"
-
-    def generateTestCases(self):
-        msg = ""
-        yield msg
-
-class EmptyMailNoMimeButSubjectTest(MailTestBase):
-    active = True
-    identifier = "empty_no_mime_subject"
-    name = "Empty mail without mime header, but with a subject header"
-    description = "Minimail mail without any content and mime header, but with a subject header"
-
-    def generateTestCases(self):
-        msg = "subject: "
-        yield msg
-
-class EmptyMailMimeNoSubjectTest(MailTestBase):
-    active = True
-    identifier = "empty_mime_no_subject_subject"
-    name = "Empty mail wit mime header, but without a subject header"
-    description = "Minimail mail without any content and subject header, but with mime header"
-
-    def generateTestCases(self):
-        msg = MIMEText("")
-        yield msg
+from email.message import Message
 
 class EmptyMailTest(MailTestBase):
     active = True
@@ -40,9 +11,21 @@ class EmptyMailTest(MailTestBase):
     description = "Minimail mail without any content"
 
     def generateTestCases(self):
+        # Entirely empty message
+        msg = Message()
+        yield msg
+
+        # Non-MIME message with subject
+        msg = Message()
+        msg["Subject"] = ""
+        yield msg
+
+        # Empty MIME text without subject
         msg = MIMEText("")
         yield msg
 
+        # Empty MIME text with empty subject
+        msg = MIMEText("")
         msg["Subject"] = ""
         yield msg
 
