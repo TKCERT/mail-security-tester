@@ -13,10 +13,10 @@ class MailTestBase:
     delivery_sender = False         # Add sender explicitely in SMTP dialog
     delivery_recipient = False      # Add recipient explicitely in SMTP dialog
 
-    def __init__(self, sender, recipient, config=None):
+    def __init__(self, sender, recipient, args):
         self.sender = sender
         self.recipient = recipient
-        self.config = config
+        self.args = args
 
     def passAttributes(self, msg):
         """Pass test attributes to result test case"""

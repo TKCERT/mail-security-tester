@@ -4,11 +4,12 @@ import mailbox
 
 # Base class
 class DeliveryBase:
-    def __init__(self, target, sender, recipients):
+    def __init__(self, target, sender, recipients, args):
         """Initializes target for test case delivery, e.g. connection to server"""
         self.target = target
         self.sender = sender
         self.recipients = recipients
+        self.args = args
 
     def deliver_testcase(self, testcase, recipient):
         """Delivers test case to target"""
@@ -19,7 +20,7 @@ class DeliveryBase:
         self.recipient_index = 1
         for recipient in self.recipients:
             self.testcase_index = 1
-            self.testcases = test(self.sender, recipient)
+            self.testcases = test(self.sender, recipient, self.args)
 
             for testcase in self.testcases:
                 self.deliver_testcase(testcase, recipient)
@@ -32,8 +33,8 @@ class DeliveryBase:
 
 class SMTPDelivery(DeliveryBase):
     """Deliver test cases to a SMTP server"""
-    def __init__(self, target, sender, recipients):
-        super().__init__(target, sender, recipients)
+    def __init__(self, target, sender, recipients, args):
+        super().__init__(target, sender, recipients, args)
         self.smtp = smtplib.SMTP(target)
 
     def deliver_testcase(self, testcase, recipient):
@@ -94,8 +95,8 @@ class MailboxDeliveryBase(DeliveryBase):
     """Base class for delivery methods using the mailbox module"""
     mailbox_class = mailbox.Mailbox
 
-    def __init__(self, target, sender, recipients):
-        super().__init__(target, sender, recipients)
+    def __init__(self, target, sender, recipients, args):
+        super().__init__(target, sender, recipients, args)
         self.mailbox = self.mailbox_class(target)
 
     def deliver_testcase(self, testcase, recipient):

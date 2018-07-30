@@ -40,13 +40,13 @@ if args.send_one:
 # Choose delivery class
 if args.output:
     if args.mbox:
-        delivery = MBoxDelivery(args.output, args.sender, recipients)
+        delivery = MBoxDelivery(args.output, args.sender, recipients, args)
     elif args.maildir:
-        delivery = MaildirDelivery(args.output, args.sender, recipients)
+        delivery = MaildirDelivery(args.output, args.sender, recipients, args)
     else:
-        delivery = FileDelivery(args.output, args.sender, recipients)
+        delivery = FileDelivery(args.output, args.sender, recipients, args)
 else:
-    delivery = SMTPDelivery(args.smtp_server, args.sender, recipients)
+    delivery = SMTPDelivery(args.smtp_server, args.sender, recipients, args)
 
 for test in tests:
     if args.include_testcase and test.identifier not in args.include_testcase \
