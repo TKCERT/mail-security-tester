@@ -15,7 +15,8 @@ argparser.add_argument("--secondary-smtp-server", "-S", help="SMTP server that i
 argparser.add_argument("--sender", "-f", default="sender@test.invalid", help="Sender address")
 argparser.add_argument("--to", "-t", action="append", help="Recipient address. Multiple addresses can be given by repetition of parameter")
 argparser.add_argument("--send-one", "-1", action="store_true", help="Send one mail for all recipients instead of one per recipients")
-argparser.add_argument("--testcase", "-T", action="append", help="Select test classes (see --list for choices)")
+argparser.add_argument("--include-testcase", "-i", action="append", help="Select test classes (see --list for choices)")
+argparser.add_argument("--exclude-testcase", "-x", action="append", help="Select test classes that should be excluded (see --list for choices)")
 argparser.add_argument("--list", "-l", action="store_true", help="List test classes")
 argparser.add_argument("--output", "-o", help="Dump tests into files in this path. By default one plain file is created per message. Further formats can be created by usage of --mbox and --maildir.")
 mailbox_format_group = argparser.add_mutually_exclusive_group()
@@ -48,7 +49,8 @@ else:
     delivery = SMTPDelivery(args.smtp_server, args.sender, recipients)
 
 for test in tests:
-    if args.testcase and test.identifier not in args.testcase:
+    if args.include_testcase and test.identifier not in args.include_testcase \
+    or args.exclude_testcase and test.identifier in args.exclude_testcase:
         continue
     delivery.deliver_testcases(test)
 
