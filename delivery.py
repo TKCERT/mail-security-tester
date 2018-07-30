@@ -10,6 +10,7 @@ class DeliveryBase:
         self.sender = sender
         self.recipients = recipients
         self.args = args
+        self.testcase_selection = args.testcases
 
     def deliver_testcase(self, testcase, recipient):
         """Delivers test case to target"""
@@ -21,9 +22,16 @@ class DeliveryBase:
         for recipient in self.recipients:
             self.testcase_index = 1
             self.testcases = test(self.sender, recipient, self.args)
+            try:
+                testcase_set = self.testcase_selection[test.identifier]
+            except KeyError:        # Definition was given, but not for this test
+                testcase_set = {}
+            except TypeError:       # No definition was given at all
+                testcase_set = None
 
             for testcase in self.testcases:
-                self.deliver_testcase(testcase, recipient)
+                if testcase_set is None or self.testcase_index in testcase_set:
+                    self.deliver_testcase(testcase, recipient)
                 self.testcase_index += 1
             self.recipient_index += 1
 
