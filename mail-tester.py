@@ -19,6 +19,7 @@ argparser.add_argument("--include-testcase", "-i", action="append", help="Select
 argparser.add_argument("--exclude-testcase", "-x", action="append", help="Select test classes that should be excluded (see --list for choices)")
 argparser.add_argument("--list", "-l", action="store_true", help="List test classes")
 argparser.add_argument("--output", "-o", help="Dump tests into files in this path. By default one plain file is created per message. Further formats can be created by usage of --mbox and --maildir.")
+argparser.add_argument("--backconnect-domain", "-b", default="localhost", help="Domain that is used for test cases where a communication backchannel is required. This should be a domain that allows the recognition of DNS queries.")
 mailbox_format_group = argparser.add_mutually_exclusive_group()
 mailbox_format_group.add_argument("--mbox", "-m", action="store_true", help="Dump test cases in mbox file format.")
 mailbox_format_group.add_argument("--maildir", "-M", action="store_true", help="Dump test cases in maildir directory.")
