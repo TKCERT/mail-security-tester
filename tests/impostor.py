@@ -80,3 +80,23 @@ class SenderHomographAttackwithSMTPDialogTest(SenderHomographAttackTest):
     name = "Sender address homograph attacks (explicit SMTP sender)"
     description = "Obfuscation of faked domains by IDN homographs in sender address with explicit sender in SMTP dialog"
     delivery_sender = True
+
+class LocalSenderTest(MailTestBase):
+    active = True
+    identifier = "sender_spoofing"
+    name = "Spoofed Sender Address"
+    description = "Mail with internal sender address sent from the Internet"
+
+    subject = "Spoofed Sender"
+    body = "This is s test mail with spoofed sender address"
+
+    def generateTestCases(self):
+        if self.args.spoofed_sender is None:
+            spoofed_sender = self.recipient
+        else:
+            spoofed_sender = self.args.spoofed_sender
+
+        msg = MIMEText(self.body)
+        msg["Subject"] = self.subject
+        msg["From"] = spoofed_sender
+        yield msg
