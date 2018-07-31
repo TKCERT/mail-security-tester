@@ -40,10 +40,19 @@ class TestcaseArgumentParser(argparse.Action):
             result[test] = idset
         setattr(args, self.dest, result)
 
-argparser = argparse.ArgumentParser(
-        description="Test framework for mail security solutions",
-        fromfile_prefix_chars="@"
+class MailTesterArgumentParser(argparse.ArgumentParser):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            description="Test framework for mail security solutions",
+            epilog="Parameters can be read from a file by a @filename parameter. The file should contain one parameter per line. Dashes may be omitted.",
+            fromfile_prefix_chars="@",
         )
+
+    def convert_arg_line_to_args(self, line : str):
+        return ("--" + line.lstrip("--")).split()
+
+argparser = MailTesterArgumentParser()
 argparser.add_argument("--smtp-server", "-s", default="localhost", help="SMTP server that is tested")
 argparser.add_argument("--secondary-smtp-server", "-S", help="SMTP server that is used for test cases that require a third-party SMTP server, e.g. for generation of bounces")
 argparser.add_argument("--sender", "-f", default="sender@test.invalid", help="Sender address")
