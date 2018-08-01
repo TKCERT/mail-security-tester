@@ -40,6 +40,19 @@ class TestcaseArgumentParser(argparse.Action):
             result[test] = idset
         setattr(args, self.dest, result)
 
+class BlacklistArgumentParser(argparse.Action):
+    """Read each blacklist file and consolidate all entries into one list"""
+    def __call__(self, parser, args, values, optstr=None):
+        blacklist = set()
+        for value in values:
+            try:
+                f = open(value, "r")
+            except (IOError, OSError) as e:
+                print("Failed to open blacklist file '{}': {}".format(value, str(e)), file=sys.stderr)
+                sys.exit(1)
+            blacklist.update([l.strip() for l in f.readlines()])
+        setattr(args, self.dest, sorted(list(blacklist)))
+
 class MailTesterArgumentParser(argparse.ArgumentParser):
 
     def __init__(self, *args, **kwargs):
@@ -65,6 +78,7 @@ argparser.add_argument("--list", "-l", action="store_true", help="List test clas
 argparser.add_argument("--output", "-o", help="Dump tests into files in this path. By default one plain file is created per message. Further formats can be created by usage of --mbox and --maildir.")
 argparser.add_argument("--backconnect-domain", "-b", default="localhost", help="Domain that is used for test cases where a communication backchannel is required. This should be a domain that allows the recognition of DNS queries.")
 argparser.add_argument("--spoofed-sender", "-F", help="Mail address used for testing of internal sender spoofing from the Internet. If this is not set, the first recipient address is used.")
+argparser.add_argument("--blacklist", "-B", action=BlacklistArgumentParser, nargs="+", help="Files containing black lists. One mail address per line. Entries beginning with @ are prepended with local part 'test'.")
 mailbox_format_group = argparser.add_mutually_exclusive_group()
 mailbox_format_group.add_argument("--mbox", "-m", action="store_true", help="Dump test cases in mbox file format.")
 mailbox_format_group.add_argument("--maildir", "-M", action="store_true", help="Dump test cases in maildir directory.")
