@@ -43,7 +43,7 @@ class MailTestBase:
 
     def __iter__(self):
         """Generates test cases. By default, test cases from generateTestCases() are completed with finalizeMessage()."""
-        yield from [self.finalizeMessage(self.passAttributes(msg)) for msg in self.generateTestCases()]
+        yield from ( self.finalizeMessage(self.passAttributes(msg)) for msg in self.generateTestCases() )
 
 class MailAttachmentTestBase(MailTestBase):
     """Base class for tests of attachments"""
