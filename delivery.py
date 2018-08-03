@@ -1,6 +1,7 @@
 # Test case delivery classes
 import smtplib
 import mailbox
+from time import sleep
 
 # Base class
 class DeliveryBase:
@@ -14,7 +15,7 @@ class DeliveryBase:
 
     def deliver_testcase(self, testcase, recipient):
         """Delivers test case to target"""
-        raise NotImplementedError("Test delivery not implemented")
+        pass
 
     def deliver_testcases(self, test):
         """Deliver all test cases of a test suite to the target"""
@@ -39,14 +40,51 @@ class DeliveryBase:
         """Finalizing delivery, e.g. for cleanup or freeing resources"""
         pass
 
-class SMTPDelivery(DeliveryBase):
+class DelayMixin:
+    """Implements delaying of test cases and automatic delay incremention. Should be mixed in for all network-based delivery classes."""
+    def __init__(self, target, sender, recipients, args):
+        super().__init__(target, sender, recipients, args)
+        self.delay = self.args.delay or 0
+        self.auto_delay = self.args.auto_delay
+        self.delay_step = self.args.delay_step
+        self.delay_max = self.args.delay_max
+        self.allow_delay_increase()
+
+    def allow_delay_increase(self):
+        """Allow automatic increase of delay after it was increased. This prevents multiple increments per test case on multiple errors."""
+        self.allow_increase_delay = True
+
+    def increase_delay(self):
+        """Increase the send delay automatically as configured in arguments. Disable delay increase until next call of .allow_delay_increase()"""
+        if self.auto_delay and self.allow_increase_delay:
+            old_delay = self.delay
+            self.delay += self.delay_step
+            if self.delay > self.delay_max:
+                self.delay = self.delay_max
+        self.allow_increase_delay = False
+        print("! Increased delay from {:0.1f} to {:0.1f}".format(old_delay, self.delay))
+
+    def do_delay(self):
+        """Sleep for the amount currently set as delay."""
+        sleep(self.delay)
+
+    def deliver_testcase(self, *args, **kwargs):
+        """Add delay to each test case"""
+        super().deliver_testcase(*args, **kwargs)
+        self.do_delay()
+
+class SMTPDelivery(DelayMixin, DeliveryBase):
     """Deliver test cases to a SMTP server"""
+    delay_increasing_status = range(400, 500)
+
     def __init__(self, target, sender, recipients, args):
         super().__init__(target, sender, recipients, args)
         self.smtp = smtplib.SMTP(target)
 
     def deliver_testcase(self, testcase, recipient):
+        super().deliver_testcase(testcase, recipient)
         print("Sending test case {} from test '{}' to {}".format(self.testcase_index, self.testcases.name, recipient))
+        self.allow_delay_increase()
         try:
             try:
                 if testcase.delivery_sender:
@@ -67,16 +105,26 @@ class SMTPDelivery(DeliveryBase):
             result = self.smtp.send_message(testcase, sender, recipient)
             for failed_recipient, (code, message) in result.items():
                 print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, message))
+                if code in self.delay_increasing_status:
+                    self.increase_delay()
         except smtplib.SMTPRecipientsRefused as e:
             print("! Reciepent refused")
             for failed_recipient, (code, message) in e.recipients.items():
                 print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, str(message, "iso-8859-1")))
+                if code in self.delay_increasing_status:
+                    self.increase_delay()
         except smtplib.SMTPHeloError as e:
             print("! SMTP error while HELO: " + str(e))
+            if e.smtp_code in self.delay_increasing_status:
+                self.increase_delay()
         except smtplib.SMTPSenderRefused as e:
             print("! SMTP server rejected sender address: " + str(e))
+            if e.smtp_code in self.delay_increasing_status:
+                self.increase_delay()
         except smtplib.SMTPDataError as e:
             print("! Unexpected SMTP error: " + str(e))
+            if e.smtp_code in self.delay_increasing_status:
+                self.increase_delay()
         except smtplib.SMTPNotSupportedError as e:
             print("! SMTP server doesn't supports SMTPUTF8: " + str(e))
         except smtplib.SMTPServerDisconnected as e:
