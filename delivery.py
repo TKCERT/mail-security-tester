@@ -80,7 +80,8 @@ class SMTPDelivery(DeliveryBase):
         except smtplib.SMTPNotSupportedError as e:
             print("! SMTP server doesn't supports SMTPUTF8: " + str(e))
         except smtplib.SMTPServerDisconnected as e:
-            print("! SMTP server disconnected unexpected: " + str(e))
+            print("! SMTP server disconnected unexpected - reconnecting: " + str(e))
+            self.smtp = smtplib.SMTP(target)
 
     def close(self):
         self.smtp.quit()
