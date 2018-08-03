@@ -79,6 +79,7 @@ class SMTPDelivery(DelayMixin, DeliveryBase):
 
     def __init__(self, target, sender, recipients, args):
         super().__init__(target, sender, recipients, args)
+        self.target = target
         self.smtp = smtplib.SMTP(target)
 
     def deliver_testcase(self, testcase, recipient):
@@ -129,7 +130,7 @@ class SMTPDelivery(DelayMixin, DeliveryBase):
             print("! SMTP server doesn't supports SMTPUTF8: " + str(e))
         except smtplib.SMTPServerDisconnected as e:
             print("! SMTP server disconnected unexpected - reconnecting: " + str(e))
-            self.smtp = smtplib.SMTP(target)
+            self.smtp = smtplib.SMTP(self.target)
 
     def close(self):
         self.smtp.quit()
