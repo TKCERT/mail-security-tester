@@ -2,6 +2,7 @@
 import smtplib
 import mailbox
 from time import sleep
+from logging import CSVLogger, DummyLogger
 
 # Base class
 class DeliveryBase:
@@ -13,6 +14,12 @@ class DeliveryBase:
         self.args = args
         self.testcase_selection = args.testcases
 
+        # Initiate logging
+        if args.log:
+            self.logger = CSVLogger(args.log)
+        else:
+            self.logger = DummyLogger()
+
     def deliver_testcase(self, testcase, recipient):
         """Delivers test case to target"""
         pass
@@ -21,6 +28,7 @@ class DeliveryBase:
         """Deliver all test cases of a test suite to the target"""
         self.recipient_index = 1
         for recipient in self.recipients:
+            self.recipient = recipient
             self.testcase_index = 1
             self.testcases = test(self.sender, recipient, self.args)
             try:
@@ -38,7 +46,7 @@ class DeliveryBase:
 
     def close(self):
         """Finalizing delivery, e.g. for cleanup or freeing resources"""
-        pass
+        self.logger.close()
 
 class DelayMixin:
     """Implements delaying of test cases and automatic delay incremention. Should be mixed in for all network-based delivery classes."""
@@ -104,14 +112,19 @@ class SMTPDelivery(DelayMixin, DeliveryBase):
                 recipient = None
 
             result = self.smtp.send_message(testcase, sender, recipient)
-            for failed_recipient, (code, message) in result.items():
-                print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, message))
-                if code in self.delay_increasing_status:
-                    self.increase_delay()
+            if result:
+                for failed_recipient, (code, message) in result.items():
+                    print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, message))
+                    self.logger.log(self.testcases.identifier, self.testcase_index, self.recipient, False, code, message)
+                    if code in self.delay_increasing_status:
+                        self.increase_delay()
+            else:
+                self.logger.log(self.testcases.identifier, self.testcase_index, self.recipient)
         except smtplib.SMTPRecipientsRefused as e:
             print("! Reciepent refused")
             for failed_recipient, (code, message) in e.recipients.items():
                 print("! Sending to recipient {} failed with error code {}: {}".format(failed_recipient, code, str(message, "iso-8859-1")))
+                self.logger.log(self.testcases.identifier, self.testcase_index, failed_recipient, False, code, str(message, "iso-8859-1"))
                 if code in self.delay_increasing_status:
                     self.increase_delay()
         except smtplib.SMTPHeloError as e:
@@ -120,19 +133,24 @@ class SMTPDelivery(DelayMixin, DeliveryBase):
                 self.increase_delay()
         except smtplib.SMTPSenderRefused as e:
             print("! SMTP server rejected sender address: " + str(e))
+            self.logger.log(self.testcases.identifier, self.testcase_index, self.recipient, False, e.smtp_code, e.smtp_error)
             if e.smtp_code in self.delay_increasing_status:
                 self.increase_delay()
         except smtplib.SMTPDataError as e:
             print("! Unexpected SMTP error: " + str(e))
+            self.logger.log(self.testcases.identifier, self.testcase_index, self.recipient, False, e.smtp_code, e.smtp_error)
             if e.smtp_code in self.delay_increasing_status:
                 self.increase_delay()
         except smtplib.SMTPNotSupportedError as e:
-            print("! SMTP server doesn't supports SMTPUTF8: " + str(e))
+            print("! SMTP server doesn't supports: " + str(e))
+            self.logger.log(self.testcases.identifier, self.testcase_index, self.recipient, False, -1, str(e))
         except smtplib.SMTPServerDisconnected as e:
+            self.logger.log(self.testcases.identifier, self.testcase_index, self.recipient, False, -2, str(e))
             print("! SMTP server disconnected unexpected - reconnecting: " + str(e))
             self.smtp = smtplib.SMTP(self.target)
 
     def close(self):
+        super().close()
         self.smtp.quit()
 
 class FileDelivery(DeliveryBase):
@@ -163,6 +181,7 @@ class MailboxDeliveryBase(DeliveryBase):
         self.mailbox.add(testcase)
 
     def close(self):
+        super().close()
         self.mailbox.close()
 
 class MBoxDelivery(MailboxDeliveryBase):
