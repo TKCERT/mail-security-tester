@@ -94,9 +94,9 @@ args = argparser.parse_args()
 tests = getTests()
 
 if args.list:   # print test list
-    print("{:20s} | {:40} | {}".format("Test ID", "Test", "Description"))
-    print("-" * 21 + "+" + "-" * 42 + "+" + "-" * 56)
-    print("\n".join(["{:20s} | {:40s} | {}".format(test.identifier, test.name, test.description) for test in tests]))
+    print("{:30s} | {:40} | {}".format("Test ID", "Test", "Description"))
+    print("-" * 31 + "+" + "-" * 42 + "+" + "-" * 56)
+    print("\n".join(["{:30s} | {:40s} | {}".format(test.identifier, test.name, test.description) for test in tests]))
     sys.exit(0)
 
 # Construct final recipient list (one mail per recipient or one for all recipients?)

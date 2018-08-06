@@ -77,7 +77,7 @@ class SenderHomographAttackTest(HomographAttackTestBase):
 class SenderHomographAttackwithSMTPDialogTest(SenderHomographAttackTest):
     active = True
     identifier = "homograph-sender-smtp"
-    name = "Sender address homograph attacks (explicit SMTP sender)"
+    name = "Sender address homograph attacks"
     description = "Obfuscation of faked domains by IDN homographs in sender address with explicit sender in SMTP dialog"
     delivery_sender = True
 
