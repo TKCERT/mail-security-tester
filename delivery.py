@@ -69,8 +69,8 @@ class DelayMixin:
             self.delay += self.delay_step
             if self.delay > self.delay_max:
                 self.delay = self.delay_max
+            print("! Increased delay from {:0.1f} to {:0.1f}".format(old_delay, self.delay))
         self.allow_increase_delay = False
-        print("! Increased delay from {:0.1f} to {:0.1f}".format(old_delay, self.delay))
 
     def do_delay(self):
         """Sleep for the amount currently set as delay."""
