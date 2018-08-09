@@ -3,6 +3,7 @@ import smtplib
 import mailbox
 from time import sleep
 from logging import CSVLogger, DummyLogger
+from tests.discovery import get_evasions
 
 # Base class
 class DeliveryBase:
@@ -20,6 +21,13 @@ class DeliveryBase:
         else:
             self.logger = DummyLogger()
 
+        # Build evasion dict with initialized evasion factories
+        evasions = get_evasions()
+        self.evasions = {
+                evasion.identifier: evasion(evasion.identifier in args.evasion)
+                for evasion in evasions
+                }
+
     def deliver_testcase(self, testcase, recipient):
         """Delivers test case to target"""
         pass
@@ -30,7 +38,7 @@ class DeliveryBase:
         for recipient in self.recipients:
             self.recipient = recipient
             self.testcase_index = 1
-            self.testcases = test(self.sender, recipient, self.args)
+            self.testcases = test(self.sender, recipient, self.evasions, self.args)
             try:
                 testcase_set = self.testcase_selection[test.identifier]
             except KeyError:        # Definition was given, but not for this test

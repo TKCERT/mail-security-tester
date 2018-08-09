@@ -3,7 +3,7 @@
 
 import argparse
 import sys
-from tests.discovery import getTests
+from tests.discovery import get_tests, get_evasions
 from delivery import SMTPDelivery, FileDelivery, MBoxDelivery, MaildirDelivery
 
 class TestcaseArgumentParser(argparse.Action):
@@ -78,7 +78,7 @@ argparser.add_argument("--delay-max", "-Dm", type=float, default=5.0, help="Auto
 argparser.add_argument("--include-test", "-i", action="append", help="Select test classes (see --list for choices)")
 argparser.add_argument("--exclude-test", "-x", action="append", help="Select test classes that should be excluded (see --list for choices)")
 argparser.add_argument("--testcases", "-T", nargs="+", action=TestcaseArgumentParser, help="Select specified test cases for execution, e.g. test:1,2,10-20")
-argparser.add_argument("--list", "-l", action="store_true", help="List test classes")
+argparser.add_argument("--list", "-l", action="store_true", help="List test classes and evasion modules.")
 argparser.add_argument("--log", "-L", help="Test result log in CSV format")
 argparser.add_argument("--output", "-o", help="Dump tests into files in this path. By default one plain file is created per message. Further formats can be created by usage of --mbox and --maildir.")
 argparser.add_argument("--backconnect-domain", "-b", default="localhost", help="Domain that is used for test cases where a communication backchannel is required. This should be a domain that allows the recognition of DNS queries.")
@@ -86,17 +86,27 @@ argparser.add_argument("--spoofed-sender", "-F", help="Mail address used for tes
 argparser.add_argument("--blacklist", "-B", action=BlacklistArgumentParser, default=list(), nargs="+", help="Files containing black lists. One mail address per line. Entries beginning with @ are prepended with local part 'test'.")
 argparser.add_argument("--spam-folder", "-j", nargs="+", default=list(), help="Folder with spam messages in EML format")
 argparser.add_argument("--malware-folder", "-w", default=list(), nargs="+", help="Folder with malware samples that are sent as attachment")
+argparser.add_argument("--evasion", "-e", action="append", default=list(), help="Enable evasion modules")
 mailbox_format_group = argparser.add_mutually_exclusive_group()
 mailbox_format_group.add_argument("--mbox", "-m", action="store_true", help="Dump test cases in mbox file format.")
 mailbox_format_group.add_argument("--maildir", "-M", action="store_true", help="Dump test cases in maildir directory.")
 args = argparser.parse_args()
 
-tests = getTests()
+tests = get_tests()
 
 if args.list:   # print test list
+    evasions = get_evasions()
+    print("Tests")
+    print("=====")
     print("{:30s} | {:40} | {}".format("Test ID", "Test", "Description"))
     print("-" * 31 + "+" + "-" * 42 + "+" + "-" * 56)
     print("\n".join(["{:30s} | {:40s} | {}".format(test.identifier, test.name, test.description) for test in sorted(tests, key=lambda test: test.identifier)]))
+    print()
+    print("Evasions")
+    print("========")
+    print("{:30s} | {:40} | {}".format("Evasion ID", "Evasion", "Description"))
+    print("-" * 31 + "+" + "-" * 42 + "+" + "-" * 56)
+    print("\n".join(["{:30s} | {:40s} | {}".format(evasion.identifier, evasion.name, evasion.description) for evasion in sorted(evasions, key=lambda evasion: evasion.identifier)]))
     sys.exit(0)
 
 # Construct final recipient list (one mail per recipient or one for all recipients?)
@@ -106,12 +116,13 @@ if args.send_one:
 
 # Choose delivery class
 if args.output:
+    file_delivery_args = (args.output, args.sender, recipients, args)
     if args.mbox:
-        delivery = MBoxDelivery(args.output, args.sender, recipients, args)
+        delivery = MBoxDelivery(*file_delivery_args)
     elif args.maildir:
-        delivery = MaildirDelivery(args.output, args.sender, recipients, args)
+        delivery = MaildirDelivery(*file_delivery_args)
     else:
-        delivery = FileDelivery(args.output, args.sender, recipients, args)
+        delivery = FileDelivery(*file_delivery_args)
 else:
     delivery = SMTPDelivery(args.smtp_server, args.sender, recipients, args)
 

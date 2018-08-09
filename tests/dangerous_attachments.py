@@ -30,8 +30,9 @@ class DangerousFileAttachment(MailAttachmentTestBase):
     def generateAttachments(self):
         for suffix in self.known_bad_suffixes:
             attachment = MIMEApplication(self.file_content)
-            attachment.add_header("Content-Disposition", "attachment", filename=self.file_name.format(suffix))
-            yield suffix, attachment
+            final_attachments = self.evasions["content_disposition"].getEvasionGenerator(attachment, self.file_name.format(suffix))
+            for ev_desc, final_attachment in final_attachments.generate():
+                yield "{} {}".format(self.file_name.format(suffix), ev_desc), final_attachment
 
 class DangerousCompressedFileAttachment(MailAttachmentTestBase):
     """Generates attachments with known bad suffixes"""
