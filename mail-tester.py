@@ -67,7 +67,6 @@ class MailTesterArgumentParser(argparse.ArgumentParser):
 
 argparser = MailTesterArgumentParser()
 argparser.add_argument("--smtp-server", "-s", default="localhost", help="SMTP server that is tested")
-argparser.add_argument("--secondary-smtp-server", "-S", help="SMTP server that is used for test cases that require a third-party SMTP server, e.g. for generation of bounces")
 argparser.add_argument("--sender", "-f", default="sender@test.invalid", help="Sender address")
 argparser.add_argument("--to", "-t", action="append", help="Recipient address. Multiple addresses can be given by repetition of parameter")
 argparser.add_argument("--send-one", "-1", action="store_true", help="Send one mail for all recipients instead of one per recipients")

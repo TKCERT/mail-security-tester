@@ -9,7 +9,6 @@ class MailTestBase:
     identifier = "base"
     name = "Mail Test Base"
     description = "Base class for mail tests"
-    delivery_server = "main"        # one of "main" or "secondary" (for simulations of bounces etc.)
     delivery_sender = False         # Add sender explicitely in SMTP dialog
     delivery_recipient = False      # Add recipient explicitely in SMTP dialog
 
