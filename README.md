@@ -1,3 +1,4 @@
+[![Build Status](https://api.travis-ci.org/TKCERT/mail-security-tester.svg?branch=master)](https://travis-ci.org/TKCERT/mail-security-tester)
 # Mail Security Testing Framework
 
 A testing framework for mail security and filtering solutions.
