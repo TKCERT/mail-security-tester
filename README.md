@@ -1,4 +1,4 @@
-# Mail Security Testinn Framework
+# Mail Security Testing Framework
 
 A testing framework for mail security and filtering solutions.
 
@@ -37,7 +37,7 @@ script. Some hints:
 * Test cases can be dumped with `--output` as plain files in a directory, in MBox (`--mbox`) or MailDir (`--maildir`)
   format. This is useful to test mail user agents without sending any mails, to document or review generated test cases.
 
-## Extension
+## Development and Extension
 
 ### Tests
 
