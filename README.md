@@ -7,7 +7,7 @@ by the tested provider. Only use your own test accounts and don't annoy anyone w
 
 ## Installation
 
-The mail security testing framework is developed with Python 3. Just pull this repository and go ahead. No further
+The mail security testing framework works with with Python >=3.5. Just pull this repository and go ahead. No further
 dependencies are required.
 
 ## Usage
