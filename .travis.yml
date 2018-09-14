@@ -4,6 +4,7 @@ python:
     - 3.5
     - 3.6
     - "pypy3.5"
-cache: pip
+install:
+    - pip install -r ci-tests/requirements.txt
 script:
     - make
