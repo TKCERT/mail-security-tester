@@ -87,16 +87,19 @@ class LocalSenderTest(MailTestBase):
     name = "Spoofed Sender Address"
     description = "Mail with internal sender address sent from the Internet"
 
-    subject = "Spoofed Sender"
+    subject = "Spoofed Sender from {}"
     body = "This is s test mail with spoofed sender address"
 
     def generateTestCases(self):
-        if self.args.spoofed_sender is None:
-            spoofed_sender = self.recipient
+        if self.args.spoofed_sender:
+            spoofed_senders = [self.args.spoofed_sender]
+        elif self.args.spoofed_sender_list:
+            spoofed_senders = open(self.args.spoofed_sender_list).readlines()
         else:
-            spoofed_sender = self.args.spoofed_sender
+            spoofed_senders = [self.recipient]
 
-        msg = MIMEText(self.body)
-        msg["Subject"] = self.subject
-        msg["From"] = spoofed_sender
-        yield msg
+        for spoofed_sender in spoofed_senders:
+            msg = MIMEText(self.body)
+            msg["Subject"] = self.subject.format(spoofed_sender)
+            msg["From"] = spoofed_sender
+            yield msg
